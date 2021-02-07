@@ -54,9 +54,8 @@ endfunction
 " I do this operation, because I think the overall layout looks nicer. Without
 " this function, what happens is that shrinking a window leads to a horizontal
 " scroll that doesn't revert when the window is refocused.
-function! animate#reset_horizontal_scroll_of_all_unfocused_windows() abort
-  let current_window = winnr()
-  noautocmd silent! windo call animate#reset_horizontal_scroll_if_needed_and_win_inactive(current_window) endif
+function! animate#reset_horizontal_scroll_of_all_unfocused_windows(active_window) abort
+  noautocmd silent! windo call animate#reset_horizontal_scroll_if_needed_and_win_inactive(a:active_window) endif
 endfunction
 
 
@@ -162,7 +161,7 @@ function! animate#window_delta(width_delta, height_delta) abort
         endif
         " Restore the heights
         noautocmd windo if has_key(nowinfixheights, winnr()) | set nowinfixheight | endif
-        call animate#reset_horizontal_scroll_of_all_unfocused_windows()
+        call animate#reset_horizontal_scroll_of_all_unfocused_windows(self.target_window)
         " Restore focus
         call animate#window_focus(self.target_window)
       endif
