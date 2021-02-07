@@ -15,7 +15,7 @@
 "
 " `Animate.vim` is a general window animation library for Vim, it provides the ability
 " to animate window height and width via:
-" 
+"
 " - `delta` from current size
 " - `percent` of screen
 " - `absolute` size
@@ -41,6 +41,24 @@ else
 endif
 
 let g:animate#timer_ids = {}
+
+" Moves the the cursor to the beginning of the line if the window is side scrolled.
+function! animate#reset_horizontal_scroll_if_needed_and_win_inactive(active_window) abort
+  if winsaveview().leftcol != 0 && winnr() != a:active_window
+    normal! 0
+  endif
+endfunction
+
+" Resets the horizontal scroll of all unfocused windows.
+"
+" I do this operation, because I think the overall layout looks nicer. Without
+" this function, what happens is that shrinking a window leads to a horizontal
+" scroll that doesn't revert when the window is refocused.
+function! animate#reset_horizontal_scroll_of_all_unfocused_windows() abort
+  let current_window = winnr()
+  noautocmd silent! windo call animate#reset_horizontal_scroll_if_needed_and_win_inactive(current_window) endif
+endfunction
+
 
 " Delta Functions {{{
 ""
@@ -118,7 +136,7 @@ function! animate#window_delta(width_delta, height_delta) abort
         endif
         " Restore the widths
         noautocmd silent! windo if has_key(nowinfixwidths, winnr()) | set nowinfixwidth | endif
-       
+
         " Restore focus
         call animate#window_focus(self.target_window)
       endif
@@ -144,6 +162,7 @@ function! animate#window_delta(width_delta, height_delta) abort
         endif
         " Restore the heights
         noautocmd windo if has_key(nowinfixheights, winnr()) | set nowinfixheight | endif
+        call animate#reset_horizontal_scroll_of_all_unfocused_windows()
         " Restore focus
         call animate#window_focus(self.target_window)
       endif
